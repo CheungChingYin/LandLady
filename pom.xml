@@ -408,6 +408,9 @@
                 <profile.name>dev</profile.name>
 				<!--Nacos服务地址-->
                 <config.server-addr>jeecg-boot-nacos:8848</config.server-addr>
+                <config.nacos-namespace>landlady</config.nacos-namespace>
+                <config.nacos-username>nacos</config.nacos-username>
+                <config.nacos-pwd>nacos</config.nacos-pwd>
             </properties>
         </profile>
         <!-- 测试 -->
