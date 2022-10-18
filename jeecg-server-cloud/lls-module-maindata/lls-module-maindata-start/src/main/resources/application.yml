@@ -6,10 +6,16 @@ spring:
   config:
     import:
       - optional:nacos:jeecg.yaml
-      - optional:nacos:jeecg-@profile.name@.yaml
+      - optional:nacos:mainData-@profile.name@.yaml
   cloud:
     nacos:
       config:
         server-addr: @config.server-addr@
+        namespace: @config.nacos-namespace@
+        username: @config.nacos-username@
+        password: @config.nacos-pwd@
       discovery:
         server-addr: ${spring.cloud.nacos.config.server-addr}
+        namespace: @config.nacos-namespace@
+        username: @config.nacos-username@
+        password: @config.nacos-pwd@
