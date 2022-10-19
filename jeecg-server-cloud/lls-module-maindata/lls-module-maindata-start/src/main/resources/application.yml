@@ -2,7 +2,7 @@ server:
   port: 7010
 spring:
   application:
-    name: jeecg-maindata
+    name: landlady-maindata
   config:
     import:
       - optional:nacos:jeecg.yaml
