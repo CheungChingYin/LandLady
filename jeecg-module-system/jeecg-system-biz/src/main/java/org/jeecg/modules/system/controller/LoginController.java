@@ -79,31 +79,7 @@ public class LoginController {
 		//update-begin--Author:scott  Date:20190805 for：暂时注释掉密码加密逻辑，有点问题
 		//前端密码加密，后端进行密码解密
 		//password = AesEncryptUtil.desEncrypt(sysLoginModel.getPassword().replaceAll("%2B", "\\+")).trim();//密码解密
-		//update-begin--Author:scott  Date:20190805 for：暂时注释掉密码加密逻辑，有点问题
 
-		//update-begin-author:taoyan date:20190828 for:校验验证码
-        String captcha = sysLoginModel.getCaptcha();
-        if(captcha==null){
-            result.error500("验证码无效");
-            return result;
-        }
-        String lowerCaseCaptcha = captcha.toLowerCase();
-        //update-begin-author:taoyan date:2022-9-13 for: VUEN-2245 【漏洞】发现新漏洞待处理20220906
-		// 加入密钥作为混淆，避免简单的拼接，被外部利用，用户自定义该密钥即可
-        String origin = lowerCaseCaptcha+sysLoginModel.getCheckKey()+jeecgBaseConfig.getSignatureSecret();
-		String realKey = Md5Util.md5Encode(origin, "utf-8");
-		//update-end-author:taoyan date:2022-9-13 for: VUEN-2245 【漏洞】发现新漏洞待处理20220906
-		Object checkCode = redisUtil.get(realKey);
-		//当进入登录页时，有一定几率出现验证码错误 #1714
-		if(checkCode==null || !checkCode.toString().equals(lowerCaseCaptcha)) {
-            log.warn("验证码错误，key= {} , Ui checkCode= {}, Redis checkCode = {}", sysLoginModel.getCheckKey(), lowerCaseCaptcha, checkCode);
-			result.error500("验证码错误");
-			// 改成特殊的code 便于前端判断
-			result.setCode(HttpStatus.PRECONDITION_FAILED.value());
-			return result;
-		}
-		//update-end-author:taoyan date:20190828 for:校验验证码
-		
 		//1. 校验用户是否有效
 		//update-begin-author:wangshuai date:20200601 for: 登录代码验证用户是否注销bug，if条件永远为false
 		LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
@@ -126,7 +102,7 @@ public class LoginController {
 		//用户登录信息
 		userInfo(sysUser, result);
 		//update-begin--Author:liusq  Date:20210126  for：登录成功，删除redis中的验证码
-		redisUtil.del(realKey);
+//		redisUtil.del(realKey);
 		//update-begin--Author:liusq  Date:20210126  for：登录成功，删除redis中的验证码
 		LoginUser loginUser = new LoginUser();
 		BeanUtils.copyProperties(sysUser, loginUser);
