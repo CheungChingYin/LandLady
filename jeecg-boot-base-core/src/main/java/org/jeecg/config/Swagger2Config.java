@@ -2,6 +2,10 @@ package org.jeecg.config;
 
 
 import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.constant.CommonConstant;
 import org.springframework.beans.BeansException;
@@ -15,6 +19,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping;
 import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration;
+import springfox.documentation.RequestHandler;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.ParameterBuilder;
 import springfox.documentation.builders.PathSelectors;
@@ -44,6 +49,9 @@ import java.util.stream.Collectors;
 @Import(BeanValidatorPluginsConfiguration.class)
 public class Swagger2Config implements WebMvcConfigurer {
 
+    // 定义分隔符
+    private static final String splitor = ";";
+
     /**
      *
      * 显示swagger-ui.html文档展示页，还必须注入swagger资源：
@@ -68,7 +76,7 @@ public class Swagger2Config implements WebMvcConfigurer {
                 .apiInfo(apiInfo())
                 .select()
                 //此包路径下的类，才生成接口文档
-                .apis(RequestHandlerSelectors.basePackage("org.jeecg"))
+                .apis(basePackage("org.jeecg"+splitor+"com.landlady"))
                 //加了ApiOperation注解的类，才生成接口文档
                 .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
                 .apis(RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class))
@@ -89,6 +97,26 @@ public class Swagger2Config implements WebMvcConfigurer {
     SecurityScheme securityScheme() {
         return new ApiKey(CommonConstant.X_ACCESS_TOKEN, CommonConstant.X_ACCESS_TOKEN, "header");
     }
+
+    public static Predicate<RequestHandler> basePackage(final String basePackage) {
+        return input -> declaringClass(input).transform(handlerPackage(basePackage)).or(true);
+    }
+    private static Function<Class<?>, Boolean> handlerPackage(final String basePackage)     {
+        return input -> {
+            // 循环判断匹配
+            for (String strPackage : basePackage.split(splitor)) {
+                boolean isMatch = input.getPackage().getName().startsWith(strPackage);
+                if (isMatch) {
+                    return true;
+                }
+            }
+            return false;
+        };
+    }
+    private static Optional<? extends Class<?>> declaringClass(RequestHandler input) {
+        return Optional.fromNullable(input.declaringClass());
+    }
+
     /**
      * JWT token
      * @return
