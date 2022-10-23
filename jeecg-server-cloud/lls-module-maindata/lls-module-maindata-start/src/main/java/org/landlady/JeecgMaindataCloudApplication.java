@@ -1,4 +1,4 @@
-package org.jeecg;
+package org.landlady;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,8 +9,8 @@ import org.jeecg.common.base.BaseMap;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@SpringBootApplication
-@EnableFeignClients
+@SpringBootApplication(scanBasePackages = {"org.jeecg","com.landlady"})
+@EnableFeignClients(basePackages = {"org.jeecg","com.landlady"})
 public class JeecgMaindataCloudApplication implements CommandLineRunner {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
