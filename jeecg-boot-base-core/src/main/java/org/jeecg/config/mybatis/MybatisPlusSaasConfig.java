@@ -1,14 +1,17 @@
 package org.jeecg.config.mybatis;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.extension.plugins.inner.DynamicTableNameInnerInterceptor;
+import org.apache.commons.lang3.StringUtils;
 import org.jeecg.common.config.TenantContext;
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.util.oConvertUtils;
 import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -35,17 +38,18 @@ public class MybatisPlusSaasConfig {
     /**
      * 哪些表需要做多租户 表需要添加一个字段 tenant_id
      */
-    private static final List<String> TENANT_TABLE = new ArrayList<String>();
+    @Value("${landlady.saas.ignoreTables}")
+    private String ignoreTables;
 
-    static {
-        TENANT_TABLE.add("demo");
+    // 忽略表的前缀
+    private static final List<String> ignoreTablePrefixList = new ArrayList<>();
 
-//        //角色、菜单、部门
-//        tenantTable.add("sys_role");
-//        tenantTable.add("sys_permission");
-//        tenantTable.add("sys_depart");
+    @Value("${landlady.saas.ignoreTablePrefix}")
+    public void setIgnoreTablePrefixList(String ignoreTablePrefix) {
+        if (StringUtils.isNoneBlank(ignoreTablePrefix)) {
+            ignoreTablePrefixList.addAll(Arrays.asList(ignoreTablePrefix.split(";")));
+        }
     }
-
 
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
@@ -63,15 +67,28 @@ public class MybatisPlusSaasConfig {
                 return TENANT_FIELD_NAME;
             }
 
-            // 返回 true 表示不走租户逻辑
+            /**
+             * 检查当前查询表是否需要走多租户模式
+             * 适用指定表名以及表名前缀
+             *
+             * @param tableName
+             * @return 返回 true 表示不走租户逻辑
+             */
             @Override
             public boolean ignoreTable(String tableName) {
-                for(String temp: TENANT_TABLE){
-                    if(temp.equalsIgnoreCase(tableName)){
-                        return false;
+                // 如果忽略租户表名中含有当前的表名，则不走租户逻辑
+                if (StringUtils.isNoneBlank(ignoreTables)) {
+                    if (ignoreTables.contains(tableName)) {
+                        return true;
                     }
                 }
-                return true;
+                // 判断表开头是否符合忽略条件
+                for (String tablePrefix : ignoreTablePrefixList) {
+                    if (tableName.toLowerCase().startsWith(tablePrefix.toLowerCase())) {
+                        return true;
+                    }
+                }
+                return false;
             }
         }));
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor());
