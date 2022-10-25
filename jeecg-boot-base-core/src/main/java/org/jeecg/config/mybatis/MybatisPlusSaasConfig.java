@@ -82,7 +82,7 @@ public class MybatisPlusSaasConfig {
                         return true;
                     }
                 }
-                // 判断表开头是否符合忽略条件
+                // 判断表前缀是否符合忽略条件
                 for (String tablePrefix : ignoreTablePrefixList) {
                     if (tableName.toLowerCase().startsWith(tablePrefix.toLowerCase())) {
                         return true;
