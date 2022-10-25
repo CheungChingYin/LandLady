@@ -25,11 +25,11 @@ import net.sf.jsqlparser.expression.LongValue;
 
 /**
  * 单数据源配置（jeecg.datasource.open = false时生效）
- * @Author zhoujf
  *
+ * @Author zhoujf
  */
 @Configuration
-@MapperScan(value={"org.jeecg.modules.**.mapper*","com.landlady.modules.**.mapper*"})
+@MapperScan(value = {"org.jeecg.modules.**.mapper*", "com.landlady.modules.**.mapper*"})
 public class MybatisPlusSaasConfig {
     /**
      * tenant_id 字段名
@@ -58,12 +58,12 @@ public class MybatisPlusSaasConfig {
         interceptor.addInnerInterceptor(new TenantLineInnerInterceptor(new TenantLineHandler() {
             @Override
             public Expression getTenantId() {
-                String tenantId = oConvertUtils.getString(TenantContext.getTenant(),"0");
+                String tenantId = oConvertUtils.getString(TenantContext.getTenant(), "0");
                 return new LongValue(tenantId);
             }
 
             @Override
-            public String getTenantIdColumn(){
+            public String getTenantIdColumn() {
                 return TENANT_FIELD_NAME;
             }
 
@@ -100,6 +100,7 @@ public class MybatisPlusSaasConfig {
 
     /**
      * 动态表名切换拦截器,用于适配vue2和vue3同一个表有多个的情况,如sys_role_index在vue3情况下表名为sys_role_index_v3
+     *
      * @return
      */
     private DynamicTableNameInnerInterceptor dynamicTableNameInnerInterceptor() {
