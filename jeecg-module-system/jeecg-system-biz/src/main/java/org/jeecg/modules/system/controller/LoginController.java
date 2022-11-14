@@ -290,6 +290,7 @@ public class LoginController {
 		String captcha = RandomUtil.randomNumbers(6);
 		JSONObject obj = new JSONObject();
     	obj.put("code", captcha);
+		log.info("【注册验证码】：" + captcha);
 		try {
 			boolean b = false;
 			//注册模板
@@ -300,7 +301,9 @@ public class LoginController {
 					baseCommonService.addLog("手机号已经注册，请直接登录！", CommonConstant.LOG_TYPE_1, null);
 					return result;
 				}
-				b = DySmsHelper.sendSms(mobile, obj, DySmsEnum.REGISTER_TEMPLATE_CODE);
+				// TODO: 2022/11/14 此处由于没有配置短信发送导致无法注册，后面能发送信息后将注释取消
+//				b = DySmsHelper.sendSms(mobile, obj, DySmsEnum.REGISTER_TEMPLATE_CODE);
+				b = true;
 			}else {
 				//登录模式，校验用户有效性
 				SysUser sysUser = sysUserService.getUserByPhone(mobile);

@@ -46,6 +46,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -85,6 +86,9 @@ public class SysUserController {
 
 	@Autowired
 	private RedisUtil redisUtil;
+
+    @Autowired
+    private ISysTenantService sysTenantService;
 
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
@@ -995,14 +999,51 @@ public class SysUserController {
 			user.setStatus(CommonConstant.USER_UNFREEZE);
 			user.setDelFlag(CommonConstant.DEL_FLAG_0);
 			user.setActivitiSync(CommonConstant.ACT_SYNC_0);
+            // 添加租户
+            userTenantHandle(username, user);
             // 默认为【房东】角色
-			sysUserService.addUserWithRole(user,"1584906788517109762");
-			result.success("注册成功");
+            sysUserService.addUserWithRole(user,"1584906788517109762");
+            result.success("注册成功");
 		} catch (Exception e) {
 			result.error500("注册失败");
 		}
 		return result;
 	}
+
+    /**
+     * 新增租户
+     * 设置租户Id到用户
+     *
+     * @param username 用户名称
+     * @param user 用户实体类
+     */
+    private void userTenantHandle(String username, SysUser user) {
+        // 从redis获得租户号最大值
+        String redisMaxId = redisUtil.get(CommonConstant.TENANT_MAX_ID_REDIS_KEY) == null ?
+                StringUtils.EMPTY : redisUtil.get(CommonConstant.TENANT_MAX_ID_REDIS_KEY).toString();
+        // 为空则去数据库找
+        if (StringUtils.isBlank(redisMaxId)) {
+            int dbMaxId = sysTenantService.queryMaxId();
+            dbMaxId++;
+            redisMaxId = dbMaxId + "";
+        }
+        SysTenant sysTenant = new SysTenant();
+        sysTenant.setId(Integer.parseInt(redisMaxId));
+        sysTenant.setName(username);
+        sysTenant.setBeginDate(new Date());
+        sysTenant.setEndDate(DateUtils.str2Date("2099-12-31", new SimpleDateFormat("yyyy-MM-dd")));
+        sysTenant.setCreateTime(new Date());
+        SysUser sysUser = sysUserService.getUserByName("admin");
+        if (sysUser != null) {
+            sysTenant.setCreateBy(sysUser.getId());
+        }
+        sysTenant.setStatus(CommonConstant.USER_UNFREEZE);
+        sysTenantService.save(sysTenant);
+        // 设置租户ID
+        user.setRelTenantIds(redisMaxId);
+        // 更新最新的租户ID
+        redisUtil.set(CommonConstant.TENANT_MAX_ID_REDIS_KEY, redisMaxId);
+    }
 
 //	/**
 //	 * 根据用户名或手机号查询用户信息

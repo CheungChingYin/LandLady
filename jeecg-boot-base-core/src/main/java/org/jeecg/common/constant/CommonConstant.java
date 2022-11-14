@@ -425,4 +425,9 @@ public interface CommonConstant {
      */
     String PHONE_REDIS_KEY_PRE = "phone_msg";
 
+    /**
+     * 租户id最大值
+     */
+    String TENANT_MAX_ID_REDIS_KEY = "tend_max_id";
+
 }

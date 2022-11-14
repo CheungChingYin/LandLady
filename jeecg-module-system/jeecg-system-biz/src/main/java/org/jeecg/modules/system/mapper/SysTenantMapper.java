@@ -9,4 +9,6 @@ import org.jeecg.modules.system.entity.SysTenant;
  */
 public interface SysTenantMapper extends BaseMapper<SysTenant> {
 
+    public int getMaxId();
+
 }

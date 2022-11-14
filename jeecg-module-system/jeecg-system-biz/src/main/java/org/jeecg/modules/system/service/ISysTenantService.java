@@ -36,4 +36,10 @@ public interface ISysTenantService extends IService<SysTenant> {
      */
     boolean removeTenantById(String id);
 
+    /**
+     * 查询最大租户ID
+     * @return
+     */
+    int queryMaxId();
+
 }
